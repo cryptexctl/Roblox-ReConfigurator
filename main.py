@@ -1,6 +1,8 @@
 import logging
 from pick import pick
 import time
+import signal
+import sys
 from patches import RobloxManager, RobloxInstaller
 import backups
 import getserver
@@ -14,6 +16,7 @@ class MenuManager:
     def __init__(self):
         self.roblox = RobloxManager()
         self.installer = RobloxInstaller()
+        self.running = True
 
     def get_menu_title(self):
         try:
@@ -38,11 +41,15 @@ class MenuManager:
             "Mods",
             "Backups",
             "Install Bootstrapper (beta)",
+            "Exit"
         ]
 
     def handle_option(self, option):
         try:
-            if option == "Install Bootstrapper (beta)":
+            if option == "Exit":
+                self.running = False
+                return
+            elif option == "Install Bootstrapper (beta)":
                 logger.warning("Bootstrapper is in beta and may cause issues")
                 logger.warning("It is recommended to NOT launch roblox using the web browser!")
                 if input("Press y to install: ").lower() == "y":
@@ -88,18 +95,26 @@ class MenuManager:
                 fflags.FFlagLaunch()
         except Exception as e:
             logger.error(f"Error: {e}")
-            time.sleep(60)
+            time.sleep(5)
+
+def signal_handler(signum, frame):
+    logger.info("\nExiting...")
+    sys.exit(0)
 
 def main():
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
     menu = MenuManager()
-    while True:
+    while menu.running:
         try:
             option, _ = pick(menu.get_menu_options(), menu.get_menu_title())
             menu.handle_option(option)
-            time.sleep(5)
+            if menu.running:
+                time.sleep(2)
         except Exception as e:
             logger.error(f"Menu error: {e}")
-            time.sleep(60)
+            time.sleep(5)
 
 if __name__ == "__main__":
     main()

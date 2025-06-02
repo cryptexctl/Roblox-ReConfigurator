@@ -5,6 +5,7 @@ import plistlib
 import requests
 import psutil
 import subprocess
+import json
 from pathlib import Path
 from typing import Optional, Tuple, List
 from dataclasses import dataclass
@@ -75,53 +76,115 @@ class RobloxInstaller:
             logger.error(f"Installer error: {e}")
             return False
 
+    def verify_bootstrapper_files(self) -> bool:
+        required_files = ["main.py", "RobloxPlayer", "bootstrapper.json"]
+        missing_files = []
+        
+        for file in required_files:
+            file_path = Path(f"bootstrapper/{file}")
+            if not file_path.exists():
+                missing_files.append(file)
+                logger.error(f"Missing required file: {file}")
+        
+        if missing_files:
+            logger.error(f"Missing files: {', '.join(missing_files)}")
+            logger.error("Please make sure all required files are present in the bootstrapper directory")
+            return False
+            
+        logger.info("All required files found")
+        return True
+
+    def backup_original_files(self) -> bool:
+        try:
+            player_path = self.paths.APP / "Contents/MacOS/RobloxPlayer"
+            player_original_path = self.paths.APP / "Contents/MacOS/RobloxPlayer_original"
+            
+            if not player_path.exists():
+                logger.error("RobloxPlayer not found")
+                return False
+                
+            if player_original_path.exists():
+                logger.info("Original backup already exists")
+                return True
+                
+            logger.info("Creating backup of original RobloxPlayer")
+            player_path.rename(player_original_path)
+            return True
+        except Exception as e:
+            logger.error(f"Backup failed: {e}")
+            return False
+
+    def restore_original_files(self) -> bool:
+        try:
+            player_path = self.paths.APP / "Contents/MacOS/RobloxPlayer"
+            player_original_path = self.paths.APP / "Contents/MacOS/RobloxPlayer_original"
+            bootstrapper_path = self.paths.APP / "Contents/MacOS/bootstrapper"
+            
+            logger.info("Restoring original files...")
+            
+            if bootstrapper_path.exists():
+                logger.info("Removing bootstrapper directory")
+                shutil.rmtree(bootstrapper_path)
+                
+            if player_path.exists():
+                logger.info("Removing current RobloxPlayer")
+                player_path.unlink()
+                
+            if player_original_path.exists():
+                logger.info("Restoring original RobloxPlayer")
+                player_original_path.rename(player_path)
+                
+            logger.info("Restore completed successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Restore failed: {e}")
+            return False
+
     def install_bootstrapper(self) -> bool:
         try:
             logger.info("Installing bootstrapper...")
-            
-            bootstrapper_path = self.paths.APP / "Contents/MacOS/bootstrapper"
-            player_path = self.paths.APP / "Contents/MacOS/RobloxPlayer"
-            player_original_path = self.paths.APP / "Contents/MacOS/RobloxPlayer_original"
             
             if not self.paths.APP.exists():
                 logger.error("Roblox is not installed")
                 return False
 
+            if not self.verify_bootstrapper_files():
+                return False
+
+            if not self.backup_original_files():
+                return False
+
+            bootstrapper_path = self.paths.APP / "Contents/MacOS/bootstrapper"
+            player_path = self.paths.APP / "Contents/MacOS/RobloxPlayer"
+            
             if bootstrapper_path.exists():
                 logger.info("Reinstalling the bootstrapper")
                 shutil.rmtree(bootstrapper_path)
-                if player_path.exists():
-                    player_path.unlink()
-                if player_original_path.exists():
-                    player_original_path.rename(player_path)
 
-            if not player_original_path.exists() and player_path.exists():
-                player_path.rename(player_original_path)
-
-            if not Path("bootstrapper").exists():
-                logger.error("Bootstrapper files not found")
+            try:
+                logger.info("Copying bootstrapper files...")
+                shutil.copytree("bootstrapper", bootstrapper_path)
+                shutil.copyfile("bootstrapper/RobloxPlayer", player_path)
+                
+                logger.info("Setting executable permissions...")
+                os.system(f"chmod +x {bootstrapper_path}/main.py")
+                os.system(f"chmod +x {bootstrapper_path}/RobloxPlayer")
+                os.system(f"chmod +x {player_path}")
+                
+                installer_path = self.paths.APP / "Contents/MacOS/RobloxPlayerInstaller.app"
+                if installer_path.exists():
+                    logger.info("Removing old installer")
+                    shutil.rmtree(installer_path, ignore_errors=True)
+                
+                logger.info("Bootstrapper installed successfully")
+                return True
+            except Exception as e:
+                logger.error(f"Installation failed: {e}")
+                self.restore_original_files()
                 return False
-
-            # Копируем все файлы бутстраппера
-            shutil.copytree("bootstrapper", bootstrapper_path)
-            
-            # Копируем скрипт запуска
-            shutil.copyfile("bootstrapper/RobloxPlayer", player_path)
-            
-            # Устанавливаем права на выполнение
-            os.system(f"chmod +x {bootstrapper_path}/main.py")
-            os.system(f"chmod +x {bootstrapper_path}/RobloxPlayer")
-            os.system(f"chmod +x {player_path}")
-            
-            # Удаляем старый установщик
-            installer_path = self.paths.APP / "Contents/MacOS/RobloxPlayerInstaller.app"
-            if installer_path.exists():
-                shutil.rmtree(installer_path, ignore_errors=True)
-            
-            logger.info("Bootstrapper installed successfully")
-            return True
         except Exception as e:
             logger.error(f"Bootstrapper installation failed: {e}")
+            self.restore_original_files()
             return False
 
     def install_player(self) -> bool:
@@ -185,6 +248,15 @@ class RobloxManager:
         self.paths = RobloxPaths()
         self.installer = RobloxInstaller()
 
+    def show_notification(self, title: str, message: str) -> None:
+        try:
+            script = f'''
+            osascript -e 'display notification "{message}" with title "{title}"'
+            '''
+            subprocess.run(script, shell=True)
+        except Exception as e:
+            logger.error(f"Failed to show notification: {e}")
+
     def launch(self) -> bool:
         try:
             player_path = self.paths.APP / "Contents/MacOS/RobloxPlayer"
@@ -199,6 +271,7 @@ class RobloxManager:
                 return False
 
             subprocess.Popen([str(player_path)])
+            self.show_notification("Roblox ReConfigurator", "Roblox ReConfigurator injected!")
             return True
         except Exception as e:
             logger.error(f"Launch failed: {e}")

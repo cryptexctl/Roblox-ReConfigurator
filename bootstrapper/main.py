@@ -213,6 +213,8 @@ class Bootstrapper:
                 logging.error("Original Roblox player not found")
                 return
 
+            self._notify("Roblox ReConfigurator", "Roblox ReConfigurator injected!")
+
             process = subprocess.Popen(
                 [str(self.paths['player_original'])],
                 stdout=subprocess.PIPE,
