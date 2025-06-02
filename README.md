@@ -4,7 +4,7 @@ A Roblox configurator for MacOS ([Roblox Configurator](https://github.com/Proton
 
 ## Demo
 
-![Roblox ReConfigurator 1.1 Demo](https://github.com/cryptexctl/Roblox-Configurator/blob/main/github/demo.png?raw=true)
+![Roblox ReConfigurator 1.1 Demo](https://github.com/cryptexctl/Roblox-ReConfigurator/blob/main/github/demo.png?raw=true)
 
 
 ## Run Locally
