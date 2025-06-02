@@ -95,11 +95,12 @@ class Bootstrapper:
             logging.error(f"Failed to save config: {e}")
 
     def _show_help(self):
-        print("Roblox Configurator Bootstrapper")
-        print("Made by Proton0")
+        print("Roblox ReConfigurator ReBootstrapper")
+        print("Originally made by Proton0")
+        print("Rewritten by cryptexctl")
         print("-h / --help            | Shows help command")
         print("-s / --show-output     | Shows roblox's output")
-        print("--no-update           | Forces roblox configurator to not update roblox")
+        print("--no-update           | Forces roblox reconfigurator to not update roblox")
         print("--reinstall           | Will reinstall roblox (requires updates to be enabled)")
         print("-d                    | Enables debugging mode")
         print("--roblox-bootstrapper | Launches roblox's original bootstrapper")
@@ -244,7 +245,7 @@ class Bootstrapper:
                         self.config.channel = server_info['channel']
                         self._save_config()
                         self._notify(
-                            "Roblox Configurator",
+                            "Roblox ReConfigurator",
                             f"Roblox has changed your channel from {old} to {server_info['channel']}!"
                         )
 
@@ -286,7 +287,7 @@ class Bootstrapper:
                     f"RCC IP: {info['rcc_address']}\n"
                     f"RCC Port: {info['rcc_port']}"
                 )
-                self._notify("Roblox Configurator", message)
+                self._notify("Roblox ReConfigurator", message)
             else:
                 logging.error("Failed to get server data")
         except Exception as e:

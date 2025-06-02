@@ -15,7 +15,7 @@ def NotifyPlayer(title, message):
 
 
 def Launch(process=None):
-    NotifyPlayer("Roblox Configurator", "Please launch a game")
+    NotifyPlayer("Roblox ReConfigurator", "Please launch a game")
     hasFound = False
     if process is None:
         process = subprocess.Popen(
@@ -50,7 +50,7 @@ def Launch(process=None):
             if found_udmux and found_rcc:
                 print("found")
                 NotifyPlayer(
-                    "Roblox Configurator",
+                    "Roblox ReConfigurator",
                     f"Found server details\nServer IP : {udmux_address}\nServer Port : {udmux_port}\nRCC IP : {rcc_server_address}\nRCC Port : {rcc_server_port}",
                 )
                 print(f"Server IP : {udmux_address}")
@@ -62,7 +62,7 @@ def Launch(process=None):
                 if server["status"] == "success":
                     print(server)
                     NotifyPlayer(
-                        "Roblox Configurator",
+                        "Roblox ReConfigurator",
                         f"Got location of server!\nCountry: {server['country']}\nRegion: {server['regionName']}\nCity: {server['city']}\nTimezone: {server['timezone']}\nLAT: {server['lat']}\n LON: {server['lon']}\nISP: {server['isp']}",
                     )
                 else:
@@ -73,7 +73,7 @@ def Launch(process=None):
             print("No more log output")
             if not hasFound:
                 NotifyPlayer(
-                    "Roblox Configurator",
+                    "Roblox ReConfigurator",
                     "Failed to get server information\nReason: No more log output",
                 )
                 if found_rcc and found_udmux:
@@ -81,12 +81,12 @@ def Launch(process=None):
                     break
                 if found_udmux:
                     NotifyPlayer(
-                        "Roblox Configurator",
+                        "Roblox ReConfigurator",
                         f"Failed to get RCC\n Server IP : {udmux_address}\nServer Port : {udmux_port}",
                     )
                 if found_rcc:
                     NotifyPlayer(
-                        "Roblox Configurator",
+                        "Roblox ReConfigurator",
                         f"Failed to get Server\nRCC IP : {rcc_server_address}\nRCC Port: {rcc_server_port}",
                     )
             time.sleep(5)
@@ -94,7 +94,7 @@ def Launch(process=None):
 
 
 def GetRobloxChannel():
-    NotifyPlayer("Roblox Configurator", "Please join a game!")
+    NotifyPlayer("Roblox ReConfigurator", "Please join a game!")
     hasFound = False
     channel_name = "Unknown"
     process = subprocess.Popen(
@@ -115,5 +115,5 @@ def GetRobloxChannel():
                 print("Failed to get channel")
             return
     process.kill()
-    NotifyPlayer("Roblox Configurator", f"Client channel is {channel_name}")
+    NotifyPlayer("Roblox ReConfigurator", f"Client channel is {channel_name}")
     print(f"Client channel is {channel_name}")

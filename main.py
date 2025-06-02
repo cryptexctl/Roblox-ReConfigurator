@@ -22,11 +22,11 @@ class MenuManager:
         try:
             version = self.roblox.get_version()
             if version == "Unknown":
-                return "Roblox Configurator 2.1 for MacOS"
-            return f"Roblox Configurator 2.1 for MacOS (Roblox: {version})"
+                return "Roblox ReConfigurator 1.1 for MacOS"
+            return f"Roblox ReConfigurator 1.1 for MacOS (Roblox: {version})"
         except Exception as e:
             logger.error(f"Failed to get menu title: {e}")
-            return "Roblox Configurator 2.1 for MacOS"
+            return "Roblox ReConfigurator 1.1 for MacOS"
 
     def get_menu_options(self):
         return [
@@ -40,7 +40,7 @@ class MenuManager:
             "Get roblox channel",
             "Mods",
             "Backups",
-            "Install Bootstrapper (beta)",
+            "Install ReBootstrapper (beta)",
             "Exit"
         ]
 
@@ -49,14 +49,14 @@ class MenuManager:
             if option == "Exit":
                 self.running = False
                 return
-            elif option == "Install Bootstrapper (beta)":
-                logger.warning("Bootstrapper is in beta and may cause issues")
+            elif option == "Install ReBootstrapper (beta)":
+                logger.warning("ReBootstrapper is in beta and may cause issues")
                 logger.warning("It is recommended to NOT launch roblox using the web browser!")
                 if input("Press y to install: ").lower() == "y":
                     if self.installer.install_bootstrapper():
-                        logger.info("Bootstrapper installed successfully")
+                        logger.info("ReBootstrapper installed successfully")
                     else:
-                        logger.error("Failed to install bootstrapper")
+                        logger.error("Failed to install ReBootstrapper")
             elif option == "Backups":
                 backups.BackupMain()
             elif option == "Mods":

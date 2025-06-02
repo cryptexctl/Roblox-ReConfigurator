@@ -27,7 +27,7 @@ Install dependencies
   pip3.12 install -r requirements.txt
 ```
 
-Start Roblox Configurator
+Start Roblox ReConfigurator
 
 ```bash
   python3.12 main.py

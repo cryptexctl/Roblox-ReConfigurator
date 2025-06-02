@@ -14,15 +14,15 @@ def InstallUI():
         return
     option2, index = pick(
         [
-            "Add mod to bootstrapper (requires roblox configurator bootstrapper)",
+            "Add mod to rebootstrapper (requires roblox reconfigurator rebootstrapper)",
             "Install mod normally",
         ],
         "Select what type of install?",
     )
     if option2 == "Install mod normally":
         Install("mods/" + option)
-    if option2 == "Add mod to bootstrapper (requires roblox configurator bootstrapper)":
-        print("Moving the mod to the bootstrapper mods folder")
+    if option2 == "Add mod to rebootstrapper (requires roblox reconfigurator rebootstrapper)":
+        print("Moving the mod to the rebootstrapper mods folder")
         shutil.copytree(
             "mods/" + option, f"/Applications/Roblox.app/Contents/MacOS/mods/{option}"
         )
@@ -46,7 +46,7 @@ def Install(pack_folder, bootstrapper=False):
         print(
             """ --- WARNING --- WARNING --- WARNING
         Using a mod for roblox can cause security issues. Please check the pack and make sure that there is NO malware on it!!!
-        Proton0 is NOT responsible for any damages done to your device!
+        Proton0 and cryptexctl is NOT responsible for any damages done to your device!
         """
         )
         if input("Press 'y' to continue").lower() != "y":
