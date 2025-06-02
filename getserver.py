@@ -47,7 +47,6 @@ def Launch(process=None):
                 found_rcc = True
                 print("found rcc")
 
-            # check
             if found_udmux and found_rcc:
                 print("found")
                 NotifyPlayer(
@@ -107,7 +106,6 @@ def GetRobloxChannel():
     while not hasFound:
         line = process.stdout.readline().decode()
         if line:
-            # Extract channel name using regular expressions (adapt if needed)
             match = re.search(r"\[FLog::ClientRunInfo\] The channel is (.*)", line)
             if match:
                 channel_name = match.group(1)

@@ -70,7 +70,6 @@ def Install(pack_folder, bootstrapper=False):
             folder_name = "content"
 
         print(f"Replacing {folder_name}...")
-        # Copy files from source folder to destination folder with tqdm progress bar
         for root, dirs, files in tqdm(
             os.walk(folder), desc=f"Replacing {folder_name}", unit="files"
         ):

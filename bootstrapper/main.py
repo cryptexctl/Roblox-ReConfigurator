@@ -237,7 +237,6 @@ class Bootstrapper:
                 if self.config.show_output:
                     logging.debug(line)
 
-                # Extract channel
                 if match := re.search(r"\[FLog::ClientRunInfo\] The channel is (.*)", line):
                     server_info['channel'] = match.group(1)
                     if self.config.channel != server_info['channel']:
@@ -249,7 +248,6 @@ class Bootstrapper:
                             f"Roblox has changed your channel from {old} to {server_info['channel']}!"
                         )
 
-                # Extract server info
                 if match := re.search(r"UDMUX Address = (\d+\.\d+\.\d+\.\d+), Port = (\d+)", line):
                     server_info['udmux_address'] = match.group(1)
                     server_info['udmux_port'] = match.group(2)
@@ -262,7 +260,6 @@ class Bootstrapper:
                     self._show_server_info(server_info)
                     break
 
-            # Continue monitoring output if show_output is enabled
             if self.config.show_output:
                 while True:
                     line = process.stdout.readline().decode()
