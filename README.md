@@ -1,10 +1,6 @@
+# Roblox ReConfigurator
 
-### This project has been archived and will no longer be updated.
-#### If you want then you can make your own version of Roblox Configurator (just credit me)
-
-# Roblox Configurator
-
-A Roblox configurator for MacOS
+A Roblox configurator for MacOS ([Roblox Configurator](https://github.com/Proton0/Roblox-Configurator/) rework)
 
 ## Demo
 
@@ -16,29 +12,30 @@ A Roblox configurator for MacOS
 Clone the project
 
 ```bash
-  git clone https://github.com/proton0/Roblox-Configurator
+  git clone https://github.com/cryptexctl/Roblox-ReConfigurator
 ```
 
 Go to the project directory
 
 ```bash
-  cd Roblox-Configurator
+  cd Roblox-ReConfigurator
 ```
 
 Install dependencies
 
 ```bash
-  pip install -r requirements.txt
+  pip3.12 install -r requirements.txt
 ```
 
 Start Roblox Configurator
 
 ```bash
-  python3 main.py
+  python3.12 main.py
 ```
 
 
 ## Authors
 
-- [@proton0](https://www.github.com/proton0)
+- [@proton0](https://www.github.com/proton0) (*original version*)
 
+- [@cryptexctl](https://www.github.com/cryptexctl) (rewritten version)

@@ -1,114 +1,105 @@
-import shutil
-import subprocess
-
+import logging
 from pick import pick
-
+import time
+from patches import RobloxManager, RobloxInstaller
 import backups
-import os
 import getserver
 import fflags
-
 import mods
-import patches
-import time
 
-while True:
-    version_roblox = patches.GetRobloxVersion(
-        "/Applications/Roblox.app/Contents/Info.plist"
-    )
-    if version_roblox == "Unknown":
-        title = "Roblox Configurator 2.1 for MacOS"
-    else:
-        title = f"Roblox Configurator 2.1 for MacOS (Roblox: {version_roblox})"
-    options = [
-        "Install Roblox",
-        "Install Roblox Studio",
-        "Uninstall Roblox",
-        "FFLag Tweaks",
-        "Get roblox version",
-        "Launch roblox",
-        "Launch roblox and get server ip and port",
-        "Get roblox channel",
-        "Mods",
-        "Backups",
-        "Install Bootstrapper (beta)",
-    ]
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-    option, index = pick(options, title)
-    try:
+class MenuManager:
+    def __init__(self):
+        self.roblox = RobloxManager()
+        self.installer = RobloxInstaller()
 
-        if option == "Install Bootstrapper (beta)":
-            print("WARN: The bootstrapper is in beta and may cause some issues")
-            print("It is recommended to NOT launch roblox using the web broswer!")
-            if input("Press y to install : ").lower() == "y":
-                print("Installing. Please wait!")
-                if os.path.exists(
-                    "/Applications/Roblox.app/Contents/MacOS/bootstrapper"
-                ):
-                    print("Reinstalling the bootstrapper")
-                    shutil.rmtree(
-                        "/Applications/Roblox.app/Contents/MacOS/bootstrapper"
-                    )
-                    os.remove("/Applications/Roblox.app/Contents/MacOS/RobloxPlayer")
-                    os.rename(
-                        "/Applications/Roblox.app/Contents/MacOS/RobloxPlayer_original",
-                        "/Applications/Roblox.app/Contents/MacOS/RobloxPlayer",
-                    )
-                if not os.path.exists(
-                    "/Applications/Roblox.app/Contents/MacOS/RobloxPlayer_original"
-                ):
-                    os.rename(
-                        "/Applications/Roblox.app/Contents/MacOS/RobloxPlayer",
-                        "/Applications/Roblox.app/Contents/MacOS/RobloxPlayer_original",
-                    )
-                shutil.copytree(
-                    "bootstrapper",
-                    "/Applications/Roblox.app/Contents/MacOS/bootstrapper",
-                )
-                shutil.copyfile(
-                    "bootstrapper/RobloxPlayer",
-                    "/Applications/Roblox.app/Contents/MacOS/RobloxPlayer",
-                )
-                os.system(
-                    "chmod +x /Applications/Roblox.app/Contents/MacOS/RobloxPlayer"
-                )
-                shutil.rmtree(
-                    "/Applications/Roblox.app/Contents/MacOS/RobloxPlayerInstaller.app",
-                    ignore_errors=True,
-                )
+    def get_menu_title(self):
+        try:
+            version = self.roblox.get_version()
+            if version == "Unknown":
+                return "Roblox Configurator 2.1 for MacOS"
+            return f"Roblox Configurator 2.1 for MacOS (Roblox: {version})"
+        except Exception as e:
+            logger.error(f"Failed to get menu title: {e}")
+            return "Roblox Configurator 2.1 for MacOS"
 
-        if option == "Backups":
-            backups.BackupMain()
-        if option == "Mods":
-            mods.InstallUI()
-        if option == "Uninstall Roblox":
-            patches.UninstallRoblox()
-        if option == "Install Roblox Studio":
-            patches.install_studio()
-        if option == "Get roblox channel":
-            getserver.GetRobloxChannel()
-        if option == "Launch roblox and get server ip and port":
-            getserver.Launch()
-        if option == "Launch roblox":
-            subprocess.run(["/Applications/Roblox.app/Contents/MacOS/RobloxPlayer"])
-        if option == "Install Roblox":
-            patches.install()
+    def get_menu_options(self):
+        return [
+            "Install Roblox",
+            "Install Roblox Studio",
+            "Uninstall Roblox",
+            "FFLag Tweaks",
+            "Get roblox version",
+            "Launch roblox",
+            "Launch roblox and get server ip and port",
+            "Get roblox channel",
+            "Mods",
+            "Backups",
+            "Install Bootstrapper (beta)",
+        ]
 
-        if option == "Get roblox version":
-            k, b = patches.GetLatestRobloxVersion()
-            print(
-                f'Installed: {patches.GetRobloxVersion("/Applications/Roblox.app/Contents/Info.plist")}'
-            )
-            print(f"Latest : {k}")
-            print(f"Latest version hash : {b}")
-            if k == patches.GetRobloxVersion(
-                "/Applications/Roblox.app/Contents/Info.plist"
-            ):
-                print("Client is up-to-date!")
+    def handle_option(self, option):
+        try:
+            if option == "Install Bootstrapper (beta)":
+                logger.warning("Bootstrapper is in beta and may cause issues")
+                logger.warning("It is recommended to NOT launch roblox using the web browser!")
+                if input("Press y to install: ").lower() == "y":
+                    if self.installer.install_bootstrapper():
+                        logger.info("Bootstrapper installed successfully")
+                    else:
+                        logger.error("Failed to install bootstrapper")
+            elif option == "Backups":
+                backups.BackupMain()
+            elif option == "Mods":
+                mods.InstallUI()
+            elif option == "Uninstall Roblox":
+                options = [
+                    "Reset (will remove configs but not the app)",
+                    "App uninstall (will uninstall player and studio)",
+                ]
+                title = "Select what type"
+                option, _ = pick(options, title)
+                if not self.roblox.uninstall(reset_only=(option == options[0])):
+                    logger.error("Failed to uninstall Roblox")
+            elif option == "Install Roblox Studio":
+                if not self.installer.install_studio():
+                    logger.error("Failed to install Roblox Studio")
+            elif option == "Get roblox channel":
+                getserver.GetRobloxChannel()
+            elif option == "Launch roblox and get server ip and port":
+                getserver.Launch()
+            elif option == "Launch roblox":
+                if not self.roblox.launch():
+                    logger.error("Failed to launch Roblox")
+            elif option == "Install Roblox":
+                if not self.installer.install_player():
+                    logger.error("Failed to install Roblox")
+            elif option == "Get roblox version":
+                latest_version, latest_hash = self.roblox.get_latest_version()
+                current_version = self.roblox.get_version()
+                logger.info(f"Installed: {current_version}")
+                logger.info(f"Latest: {latest_version}")
+                logger.info(f"Latest version hash: {latest_hash}")
+                if latest_version == current_version:
+                    logger.info("Client is up-to-date!")
+            elif option == "FFLag Tweaks":
+                fflags.FFlagLaunch()
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            time.sleep(60)
 
-        if option == "FFLag Tweaks":
-            fflags.FFlagLaunch()
-        time.sleep(5)
-    except Exception as e:
-        print(f"Error : {e}")
-        time.sleep(60)
+def main():
+    menu = MenuManager()
+    while True:
+        try:
+            option, _ = pick(menu.get_menu_options(), menu.get_menu_title())
+            menu.handle_option(option)
+            time.sleep(5)
+        except Exception as e:
+            logger.error(f"Menu error: {e}")
+            time.sleep(60)
+
+if __name__ == "__main__":
+    main()

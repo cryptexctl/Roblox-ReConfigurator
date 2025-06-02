@@ -1,59 +1,46 @@
 import os
 import shutil
+import logging
+from pathlib import Path
 from tqdm import tqdm
 
+logger = logging.getLogger(__name__)
 
-def Install(pack_folder, bootstrapper=False):
-    folders = []
-    content = os.path.join(pack_folder, "content")
-    if os.path.exists(content):
-        folders.append(content)
-    platformcontent = os.path.join(pack_folder, "PlatformContent")
-    if os.path.exists(platformcontent):
-        folders.append(platformcontent)
-    extracontent = os.path.join(pack_folder, "ExtraContent")
-    if os.path.exists(extracontent):
-        folders.append(extracontent)
+def Install(mod_path: str, silent: bool = False) -> bool:
+    try:
+        if not silent:
+            print("Please do not launch roblox!")
 
-    if bootstrapper == False:
-        print(
-            """ --- WARNING --- WARNING --- WARNING
-        Using a mod for roblox can cause security issues. Please check the pack and make sure that there is NO malware on it!!!
-        Proton0 is NOT responsible for any damages done to your device!
-        """
-        )
-        if input("Press 'y' to continue").lower() != "y":
-            print("Cancelled")
-            return
+        mod_path = Path(mod_path)
+        if not mod_path.exists():
+            logger.error(f"Mod not found: {mod_path}")
+            return False
 
-        print("The following folders will be replaced : ")
-        for folder in folders:
-            print(folder)
+        app_path = Path("/Applications/Roblox.app")
+        if not app_path.exists():
+            logger.error("Roblox is not installed")
+            return False
 
-    print("Please do not launch roblox!")
-    for folder in folders:
-        if folder.endswith("PlatformContent"):
-            destination = "/Applications/Roblox.app/Contents/Resources/PlatformContent"
-            folder_name = "PlatformContent"
-        elif folder.endswith("ExtraContent"):
-            destination = "/Applications/Roblox.app/Contents/Resources/ExtraContent"
-            folder_name = "ExtraContent"
-        elif folder.endswith("content"):
-            destination = "/Applications/Roblox.app/Contents/Resources/content"
-            folder_name = "content"
+        content_path = app_path / "Contents/MacOS/ClientSettings"
+        if not content_path.exists():
+            content_path.mkdir(parents=True)
 
-        print(f"Replacing {folder_name}...")
-        # Copy files from source folder to destination folder with tqdm progress bar
-        for root, dirs, files in tqdm(
-            os.walk(folder), desc=f"Replacing {folder_name}", unit="files"
-        ):
-            for file in files:
-                src_file = os.path.join(root, file)
-                rel_path = os.path.relpath(src_file, folder)
-                dest_file = os.path.join(destination, rel_path)
-                dest_dir = os.path.dirname(dest_file)
-                if not os.path.exists(dest_dir):
-                    os.makedirs(dest_dir)
-                shutil.copy(src_file, dest_file)
+        for item in mod_path.iterdir():
+            if item.is_file():
+                target = content_path / item.name
+                if target.exists():
+                    target.unlink()
+                shutil.copy2(item, target)
+                logger.info(f"Replacing content: {item.name}")
+            elif item.is_dir():
+                target = content_path / item.name
+                if target.exists():
+                    shutil.rmtree(target)
+                shutil.copytree(item, target)
+                logger.info(f"Replacing ExtraContent: {item.name}")
 
-    print("Mod installed successfully.")
+        logger.info("Mod installed successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Mod installation failed: {e}")
+        return False
