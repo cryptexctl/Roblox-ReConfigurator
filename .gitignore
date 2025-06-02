@@ -1,0 +1,10 @@
+.venv
+.idea
+installer.dmg
+backups
+launch_backup_temp
+RobloxDowngrade.zip
+client
+*.DS_Store
+__pycache__
+bootstrapper/__pycache__
